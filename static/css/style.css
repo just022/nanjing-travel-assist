@@ -477,6 +477,74 @@ body {
     padding-top: 16px;
 }
 
+/* 站点可去景点标注 */
+.spot-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.spot-tag {
+    text-decoration: none;
+    display: inline-block;
+}
+
+.spot-tag:hover {
+    background: var(--pink-dark);
+    color: #fff;
+}
+
+.line-spots {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #5a6b7b;
+}
+
+.map-spot {
+    color: var(--pink-dark);
+    font-weight: bold;
+    margin-left: 2px;
+}
+
+.muted {
+    color: #b6c2cc;
+}
+
+/* 板块内二级页签 */
+.sub-tab-bar {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.sub-tab {
+    padding: 6px 16px;
+    border-radius: 16px;
+    background: #f2f5f8;
+    color: #5a6b7b;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.sub-tab.active {
+    background: var(--blue);
+    color: #fff;
+}
+
+/* 穿搭推荐卡片 */
+.outfit-card {
+    border-left: 4px solid var(--pink);
+    margin-bottom: 20px;
+}
+
+.outfit-card h2 {
+    color: var(--pink-dark);
+}
+
 .route-empty {
     margin-top: 20px;
     color: #c0392b;

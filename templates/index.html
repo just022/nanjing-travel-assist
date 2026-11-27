@@ -9,25 +9,20 @@
 </div>
 
 <div class="entry-grid">
-    <a class="entry-card entry-blue" href="{{ url_for('transit.transit_index') }}">
+    <a class="entry-card entry-blue" href="{{ url_for('route.route_index', tab='query') }}">
         <div class="entry-icon">🚇</div>
-        <h3>出行查询</h3>
-        <p>地铁线路、公交班次与途经站点一站式查询</p>
+        <h3>出行规划</h3>
+        <p>线路查询、自选换乘与需求推荐动线一站式规划</p>
     </a>
-    <a class="entry-card entry-pink" href="{{ url_for('route.route_index') }}">
-        <div class="entry-icon">🗺️</div>
-        <h3>路线规划</h3>
-        <p>输入起终点，智能推荐换乘路线与线路图</p>
-    </a>
-    <a class="entry-card entry-blue" href="{{ url_for('spot.spot_index') }}">
+    <a class="entry-card entry-pink" href="{{ url_for('spot.spot_index') }}">
         <div class="entry-icon">🏞️</div>
         <h3>热门景点</h3>
         <p>图文介绍、开放时间、门票与游玩攻略</p>
     </a>
-    <a class="entry-card entry-pink" href="{{ url_for('makeup.makeup_index') }}">
-        <div class="entry-icon">💄</div>
-        <h3>妆容推荐</h3>
-        <p>结合实时天气、肤质与场景推荐合适妆容</p>
+    <a class="entry-card entry-blue" href="{{ url_for('makeup.makeup_index') }}">
+        <div class="entry-icon">👗</div>
+        <h3>穿搭妆容</h3>
+        <p>结合天气温度、晴雨与场景推荐穿搭和妆容</p>
     </a>
 </div>
 

@@ -29,6 +29,6 @@
     </tbody>
 </table>
 {% else %}
-<p>暂无收藏路线，去 <a href="{{ url_for('route.route_index') }}">路线规划</a> 查一条并收藏吧。</p>
+<p>暂无收藏路线，去 <a href="{{ url_for('route.route_index', tab='manual') }}">出行规划</a> 查一条并收藏吧。</p>
 {% endif %}
 {% endblock %}
