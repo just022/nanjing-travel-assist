@@ -28,12 +28,22 @@
 </table>
 {% endif %}
 {% else %}
-<h2>地铁线路</h2>
-<div class="line-list">
-    {% for line in lines %}
-    <div class="line-item">
-        <span class="line-dot" style="background:{{ line.line_color }}"></span>
-        {{ line.line_name }}
+
+<h2>线路示意图</h2>
+<div class="line-map">
+    {% for line in line_map %}
+    <div class="map-line">
+        <div class="map-line-head">
+            <span class="line-dot" style="background:{{ line.line_color }}"></span>
+            {{ line.line_name }}
+            <span class="line-count">（{{ line.stations|length }} 站）</span>
+        </div>
+        <div class="map-stations">
+            {% for st in line.stations %}
+            <span class="map-station {% if st.transfer %}transfer{% endif %}">{{ st.name }}</span>
+            {% if not loop.last %}<span class="map-link" style="background:{{ line.line_color }}"></span>{% endif %}
+            {% endfor %}
+        </div>
     </div>
     {% endfor %}
 </div>

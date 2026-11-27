@@ -8,12 +8,15 @@
 
 {% if spots %}
 <div class="spot-list">
-    <h2>热门景点推荐</h2>
     {% for spot in spots %}
     <div class="card">
-        <h3>{{ spot.spot_name }}</h3>
-        <p class="addr">{{ spot.address }}</p>
-        <p class="traffic">🚇 {{ spot.recommend_traffic }}</p>
+        {% if spot.image %}
+        <img class="spot-img" src="{{ url_for('static', filename='images/' ~ spot.image) }}" alt="{{ spot.spot_name }}">
+        {% endif %}
+        <div class="card-body">
+            <h3>{{ spot.spot_name }}</h3>
+            <p class="traffic">🚇 {{ spot.recommend_traffic }}</p>
+        </div>
     </div>
     {% endfor %}
 </div>

@@ -20,3 +20,9 @@ def search_stations(keyword):
     return SubwayStation.query.filter(
         SubwayStation.station_name.like(f"%{keyword}%")
     ).order_by(SubwayStation.station_name).all()
+
+
+def get_line_map():
+    """返回线路图所需结构：线路 -> 站点序列（含线路颜色、名称）。"""
+    lines = get_all_lines()
+    return [ln.to_dict() for ln in lines]

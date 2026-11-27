@@ -4,11 +4,47 @@
 
 {% block content %}
 <h1>路线规划</h1>
-<p>输入起点与终点，规划出行方案（功能待开发）。</p>
 
-<form class="search-form" method="get" action="#">
-    <input type="text" name="origin" placeholder="起点">
-    <input type="text" name="destination" placeholder="终点">
+<form class="search-form" method="get" action="{{ url_for('route.route_index') }}">
+    <select name="origin">
+        <option value="">选择起点</option>
+        {% for s in stations %}
+        <option value="{{ s }}" {% if s == origin %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+    </select>
+    <select name="destination">
+        <option value="">选择终点</option>
+        {% for s in stations %}
+        <option value="{{ s }}" {% if s == destination %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+    </select>
     <button type="submit">规划路线</button>
 </form>
+
+{% if result %}
+<div class="route-result">
+    {% if result.found %}
+    <div class="route-summary">
+        <strong>{{ result.origin }}</strong> → <strong>{{ result.destination }}</strong>
+        <span class="badge">{{ result.message }}</span>
+    </div>
+
+    {% for seg in result.segments %}
+    <div class="segment">
+        <div class="segment-title">
+            乘坐 {{ seg.line_name }}
+            （{{ seg.stations|length }} 站）
+        </div>
+        <ol class="station-list">
+            {% for st in seg.stations %}
+            <li>{{ st }}</li>
+            {% endfor %}
+        </ol>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="route-empty">{{ result.message }}</div>
+    {% endif %}
+</div>
+{% endif %}
 {% endblock %}
