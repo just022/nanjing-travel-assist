@@ -137,6 +137,81 @@ body {
     color: var(--blue-dark);
 }
 
+/* 需求推荐卡片 */
+.rec-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 16px;
+}
+
+.rec-card {
+    border: 1px solid #eee;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.rec-head {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+}
+
+.rec-img {
+    width: 160px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.rec-info {
+    flex: 1;
+}
+
+.rec-info h3 {
+    margin-bottom: 6px;
+}
+
+.rec-info h3 a {
+    color: #333;
+    text-decoration: none;
+}
+
+.rec-info h3 a:hover {
+    color: var(--blue-dark);
+}
+
+.rec-meta {
+    color: #5a6b7b;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.rec-reasons {
+    list-style: none;
+    margin-top: 8px;
+}
+
+.rec-reasons li {
+    font-size: 13px;
+    color: var(--pink-dark);
+    line-height: 1.8;
+}
+
+.rec-route {
+    border-top: 1px dashed #eee;
+    padding: 14px 16px;
+    background: #fafbfc;
+}
+
+.rec-traffic {
+    color: #5a6b7b;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
 /* 搜索表单 */
 .search-form {
     display: flex;
@@ -332,6 +407,74 @@ body {
     border-radius: 6px;
     padding: 6px 12px;
     font-size: 14px;
+}
+
+/* 一日游动线总览 */
+.itinerary-box {
+    background: var(--pink-light);
+    border: 1px solid #f6d3e2;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 16px 0;
+}
+
+.itinerary-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+
+.itinerary-path {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+}
+
+.itin-arrow {
+    color: var(--pink-dark);
+    font-weight: bold;
+}
+
+.itin-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--pink);
+    color: #fff;
+    font-size: 13px;
+    margin-right: 6px;
+}
+
+/* 换乘指引与首末班 */
+.route-guides {
+    margin: 10px 0;
+    padding-left: 20px;
+    color: #445;
+    font-size: 14px;
+}
+
+.route-guides li {
+    margin: 4px 0;
+}
+
+.seg-time {
+    font-weight: normal;
+    color: #7a8a99;
+    font-size: 13px;
+    margin-left: 8px;
+}
+
+.spot-route {
+    margin-top: 24px;
+    border-top: 1px dashed #ddd;
+    padding-top: 16px;
 }
 
 .route-empty {

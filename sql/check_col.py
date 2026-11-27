@@ -18,6 +18,7 @@ ensure_column("scenic_spot", "open_time", "open_time VARCHAR(100) COMMENT '开�
 ensure_column("scenic_spot", "ticket", "ticket VARCHAR(100) COMMENT '门票信息' AFTER open_time")
 ensure_column("scenic_spot", "duration", "duration VARCHAR(50) COMMENT '建议游玩时长' AFTER ticket")
 ensure_column("scenic_spot", "tags", "tags VARCHAR(200) COMMENT '亮点标签，逗号分隔' AFTER duration")
+ensure_column("scenic_spot", "nearest_station", "nearest_station VARCHAR(50) COMMENT '最近站点名' AFTER tags")
 ensure_column("bus_line", "stations", "stations TEXT COMMENT '途经站点，逗号分隔'")
 ensure_column("bus_line", "first_time", "first_time VARCHAR(20) COMMENT '首班车时间'")
 ensure_column("bus_line", "last_time", "last_time VARCHAR(20) COMMENT '末班车时间'")

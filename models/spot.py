@@ -16,6 +16,7 @@ class ScenicSpot(db.Model):
     ticket = db.Column(db.String(100), comment="门票信息")
     duration = db.Column(db.String(50), comment="建议游玩时长")
     tags = db.Column(db.String(200), comment="亮点标签，逗号分隔")
+    nearest_station = db.Column(db.String(50), comment="最近公交/地铁站点名，用于路线规划")
 
     def to_dict(self):
         return {
@@ -30,4 +31,5 @@ class ScenicSpot(db.Model):
             "ticket": self.ticket,
             "duration": self.duration,
             "tags": self.tags,
+            "nearest_station": self.nearest_station,
         }

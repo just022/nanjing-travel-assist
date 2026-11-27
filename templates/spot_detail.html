@@ -26,7 +26,7 @@
 
     {% if spot.tags %}
     <div class="tag-list">
-        {% for tag in spot.tags.split('、') %}
+        {% for tag in spot.tags.split(',') %}
         <span class="tag">{{ tag }}</span>
         {% endfor %}
     </div>
@@ -45,6 +45,48 @@
     <div class="detail-desc">
         <h2>图文介绍</h2>
         <p>{{ spot.description }}</p>
+    </div>
+
+    <!-- 怎么去：选起点后复用配套路线 -->
+    <div class="spot-route">
+        <h2>怎么去</h2>
+        <form class="search-form" method="get" action="{{ url_for('spot.spot_detail', spot_id=spot.id) }}">
+            <select name="origin">
+                <option value="">选择出发站点</option>
+                {% for s in stations %}
+                <option value="{{ s }}" {% if s == origin %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">查询路线</button>
+        </form>
+
+        {% if spot_route %}
+        {% if spot_route.found %}
+        <div class="route-summary">
+            <strong>{{ spot_route.origin }}</strong> → <strong>{{ spot_route.destination }}</strong>
+            <span class="badge">{{ spot_route.message }}</span>
+        </div>
+        {% if spot_route.guides %}
+        <ul class="route-guides">
+            {% for g in spot_route.guides %}<li>{{ g }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+        {% for seg in spot_route.segments %}
+        <div class="segment">
+            <div class="segment-title">
+                {% if seg.kind == "公交" %}🚌 {% else %}🚇 {% endif %}
+                乘坐 {{ seg.line_name }}（{{ seg.station_count }} 站）
+                {% if seg.first_time %}<span class="seg-time">首末班 {{ seg.first_time }}—{{ seg.last_time }}</span>{% endif %}
+            </div>
+            <ol class="station-list">
+                {% for st in seg.stations %}<li>{{ st }}</li>{% endfor %}
+            </ol>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="rec-traffic">🚦 交通建议：{{ spot_route.message }}</p>
+        {% endif %}
+        {% endif %}
     </div>
 </div>
 

@@ -8,11 +8,20 @@
 {% if line.first_time %}<p>运营时间：{{ line.first_time }} — {{ line.last_time }}</p>{% endif %}
 
 <h2>途经站点（{{ stations|length }} 站）</h2>
-<ol class="station-list">
+<table class="data-table">
+    <thead><tr><th>站点</th><th>带入路线规划</th></tr></thead>
+    <tbody>
     {% for st in stations %}
-    <li>{{ st }}</li>
+    <tr>
+        <td>{{ st }}</td>
+        <td>
+            <a class="btn-link" href="{{ url_for('route.route_index', mode='manual', origin=st) }}">设为起点</a>
+            <a class="btn-link" href="{{ url_for('route.route_index', mode='manual', destination=st) }}">设为终点</a>
+        </td>
+    </tr>
     {% endfor %}
-</ol>
+    </tbody>
+</table>
 
 <p><a href="{{ url_for('transit.transit_index', tab='bus') }}">← 返回公交列表</a></p>
 {% endblock %}

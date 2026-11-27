@@ -49,13 +49,17 @@
 {% if subway_stations %}
 <table class="data-table">
     <thead>
-        <tr><th>站点名</th><th>是否换乘站</th></tr>
+        <tr><th>站点名</th><th>是否换乘站</th><th>带入路线规划</th></tr>
     </thead>
     <tbody>
     {% for s in subway_stations %}
         <tr>
             <td>{{ s.station_name }}</td>
             <td>{{ '是' if s.is_transfer else '否' }}</td>
+            <td>
+                <a class="btn-link" href="{{ url_for('route.route_index', mode='manual', origin=s.station_name) }}">设为起点</a>
+                <a class="btn-link" href="{{ url_for('route.route_index', mode='manual', destination=s.station_name) }}">设为终点</a>
+            </td>
         </tr>
     {% endfor %}
     </tbody>

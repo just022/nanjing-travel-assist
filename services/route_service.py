@@ -42,6 +42,42 @@ def city_available(code):
 SUBWAY_WEIGHT = 1
 BUS_WEIGHT = 3
 
+# 出行耗时估算（分钟）：地铁/公交站间平均行驶 + 停站；换乘额外步行等待
+SUBWAY_MIN_PER_STATION = 2.5
+BUS_MIN_PER_STATION = 4
+TRANSFER_PENALTY_MIN = 6  # 每次换乘步行 + 等待
+WALK_MIN = 5  # 起点/终点到站点的步行预留
+
+# 票价简化规则（南京公交/地铁起步价，毕设演示用）
+BUS_FARE = 2  # 公交统一 2 元
+SUBWAY_BASE_FARE = 2  # 地铁起步 2 元（含 4 站以内）
+SUBWAY_FARE_PER = 1  # 超出起步后每 4 站加 1 元
+
+
+def _estimate_duration(segments, total_stations):
+    """按分段类型估算全程耗时（分钟），返回取整后的分钟数。"""
+    minutes = WALK_MIN
+    for seg in segments:
+        n = max(len(seg["stations"]) - 1, 0)
+        minutes += n * (SUBWAY_MIN_PER_STATION if seg["kind"] == "地铁" else BUS_MIN_PER_STATION)
+    transfer_count = len(segments) - 1
+    minutes += transfer_count * TRANSFER_PENALTY_MIN
+    return max(round(minutes), total_stations + 2)
+
+
+def _estimate_fare(segments):
+    """简化估算票价：公交 2 元/段；地铁按站数分段计价。返回 (票价区间文本, 估算金额)。"""
+    subway_segs = [s for s in segments if s["kind"] == "地铁"]
+    bus_segs = [s for s in segments if s["kind"] == "公交"]
+    fare = 0
+    for seg in subway_segs:
+        n = max(len(seg["stations"]) - 1, 0)
+        fare += SUBWAY_BASE_FARE + (n // 4) * SUBWAY_FARE_PER
+    fare += len(bus_segs) * BUS_FARE
+    if fare <= 0:
+        return "-", 0
+    return f"约 {fare} 元", fare
+
 
 def _build_graph():
     """
@@ -96,6 +132,24 @@ def _line_label(line_key):
         return "未知线路"
     kind, _ = line_key.split(":", 1)
     return "地铁" if kind == "地铁" else "公交"
+
+
+def _build_segment(line_key, stations, station_lines, bus_times):
+    """组装一个乘行分段，附带线路名、类型、站数与公交首末班。"""
+    kind = _line_label(line_key)
+    line_name = station_lines[stations[0]].get(line_key, "未知线路")
+    seg = {
+        "line_name": line_name,
+        "kind": kind,
+        "stations": stations,
+        "station_count": max(len(stations) - 1, 0),
+    }
+    if kind == "公交" and line_key:
+        _, bus_id = line_key.split(":", 1)
+        times = bus_times.get(int(bus_id))
+        if times:
+            seg["first_time"], seg["last_time"] = times
+    return seg
 
 
 def find_station(name):
@@ -164,6 +218,9 @@ def plan_route(origin, destination, city_code="nanjing"):
         cur = prev[cur]
     path.reverse()
 
+    # 公交运营时间映射（供分段展示首末班提示）
+    bus_times = {bl.id: (bl.first_time, bl.last_time) for bl in BusLine.query.all()}
+
     # 分段：按乘坐线路（地铁/公交 + 具体线路）切分
     segments = []
     current_line = None
@@ -184,24 +241,28 @@ def plan_route(origin, destination, city_code="nanjing"):
         if current_line is None:
             current_line = line_key
         elif line_key != current_line and line_key is not None:
-            segments.append({
-                "line_name": station_lines[prev_st].get(current_line, "未知线路"),
-                "kind": _line_label(current_line),
-                "stations": segment_stations,
-            })
+            segments.append(_build_segment(current_line, segment_stations, station_lines, bus_times))
             current_line = line_key
             segment_stations = [prev_st]
 
         segment_stations.append(curr_st)
 
-    segments.append({
-        "line_name": station_lines[path[-1]].get(current_line, "未知线路"),
-        "kind": _line_label(current_line),
-        "stations": segment_stations,
-    })
+    segments.append(_build_segment(current_line, segment_stations, station_lines, bus_times))
 
     transfer_count = len(segments) - 1
     total_stations = len(path) - 1
+    duration_min = _estimate_duration(segments, total_stations)
+    fare_text, fare_value = _estimate_fare(segments)
+
+    # 换乘指引：逐段说明在哪站换乘哪条线
+    guides = []
+    for idx, seg in enumerate(segments):
+        if idx == 0:
+            guides.append(f"在 {path[0]} 站乘坐 {seg['line_name']}")
+        else:
+            prev_seg = segments[idx - 1]
+            guides.append(f"在 {seg['stations'][0]} 站由 {prev_seg['line_name']} 换乘 {seg['line_name']}")
+    guides.append(f"在 {path[-1]} 站下车后步行前往目的地")
 
     return {
         "found": True,
@@ -211,7 +272,11 @@ def plan_route(origin, destination, city_code="nanjing"):
         "segments": segments,
         "total_stations": total_stations,
         "transfer_count": transfer_count,
-        "message": f"共 {total_stations} 站，换乘 {transfer_count} 次",
+        "duration_min": duration_min,
+        "fare_text": fare_text,
+        "fare_value": fare_value,
+        "guides": guides,
+        "message": f"共 {total_stations} 站，换乘 {transfer_count} 次，约 {duration_min} 分钟，{fare_text}",
         "city_name": city_name,
     }
 

@@ -5,7 +5,22 @@
 {% block content %}
 <h1>路线规划</h1>
 
+<!-- 模式切换 -->
+<div class="tab-bar">
+    <a class="tab {% if mode == 'recommend' %}active{% endif %}"
+       href="{{ url_for('route.route_index', city=city_code, origin=origin, mode='recommend') }}">需求推荐</a>
+    <a class="tab {% if mode == 'manual' %}active{% endif %}"
+       href="{{ url_for('route.route_index', city=city_code, origin=origin, mode='manual') }}">自选路线</a>
+</div>
+
+{% if not available %}
+<div class="route-empty">所选城市的交通数据暂未收录，目前仅支持南京，其他城市即将上线。</div>
+{% endif %}
+
+{% if available %}
+<!-- 公共：城市 + 起点 -->
 <form class="search-form" method="get" action="{{ url_for('route.route_index') }}">
+    <input type="hidden" name="mode" value="{{ mode }}">
     <select name="city">
         {% for c in cities %}
         <option value="{{ c.code }}" {% if c.code == city_code %}selected{% endif %}>
@@ -13,25 +28,155 @@
         </option>
         {% endfor %}
     </select>
-    <select name="origin" {% if not available %}disabled{% endif %}>
-        <option value="">选择起点</option>
+    <select name="origin">
+        <option value="">选择起点（可选）</option>
         {% for s in stations %}
         <option value="{{ s }}" {% if s == origin %}selected{% endif %}>{{ s }}</option>
         {% endfor %}
     </select>
-    <select name="destination" {% if not available %}disabled{% endif %}>
+    {% if mode == 'manual' %}
+    <select name="destination">
         <option value="">选择终点</option>
         {% for s in stations %}
         <option value="{{ s }}" {% if s == destination %}selected{% endif %}>{{ s }}</option>
         {% endfor %}
     </select>
-    <button type="submit" {% if not available %}disabled{% endif %}>规划路线</button>
+    {% endif %}
+    {% if mode == 'recommend' %}
+    <button type="submit">生成推荐</button>
+    {% else %}
+    <button type="submit">规划路线</button>
+    {% endif %}
 </form>
-
-{% if not available %}
-<div class="route-empty">所选城市的交通数据暂未收录，目前仅支持南京，其他城市即将上线。</div>
 {% endif %}
 
+{% if mode == 'recommend' and available %}
+<!-- 需求偏好筛选 -->
+<form class="makeup-filter" method="get" action="{{ url_for('route.route_index') }}">
+    <input type="hidden" name="mode" value="recommend">
+    <input type="hidden" name="city" value="{{ city_code }}">
+    <input type="hidden" name="origin" value="{{ origin }}">
+    <label>偏好
+        <select name="pref" multiple size="1">
+            {% for p in preferences %}
+            <option value="{{ p }}" {% if p in prefs %}selected{% endif %}>{{ p }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>可玩时长
+        <select name="duration">
+            {% for d in ['1小时内', '半天', '一整天'] %}
+            <option value="{{ d }}" {% if d == duration_bucket %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <button type="submit">预测推荐</button>
+</form>
+
+{% if weather %}
+<p class="route-empty" style="color:#5a6b7b;">结合当前天气：{{ weather.city }} {{ weather.weather_text }} {{ weather.temperature }}℃
+    {% if weather.fallback %}（示例天气）{% endif %}
+    为你筛选应季景点。</p>
+{% endif %}
+
+<!-- 动线路线总览 -->
+{% if itinerary and recommendations %}
+<div class="itinerary-box">
+    <div class="itinerary-head">
+        <span class="badge">🗺️ 推荐动线</span>
+        <span>{{ itinerary.summary.text }}</span>
+    </div>
+    <div class="itinerary-path">
+        {% if origin %}<strong>{{ origin }}</strong>{% else %}<strong>起点待定</strong>{% endif %}
+        {% for item in recommendations %}
+        <span class="itin-arrow">→</span>
+        <strong>{{ item.spot.spot_name }}</strong>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- 推荐结果列表 -->
+<div class="rec-list">
+    {% for item in recommendations %}
+    {% set spot = item.spot %}
+    <div class="rec-card">
+        <div class="rec-head">
+            {% if spot.image %}
+            <img class="rec-img" src="{{ url_for('static', filename='images/' ~ spot.image) }}" alt="{{ spot.spot_name }}">
+            {% endif %}
+            <div class="rec-info">
+                <h3>
+                    <span class="itin-index">{{ loop.index }}</span>
+                    <a href="{{ url_for('spot.spot_detail', spot_id=spot.id) }}">{{ spot.spot_name }}</a>
+                </h3>
+                <p class="rec-meta">⏳ {{ spot.duration }} · 🎫 {{ spot.ticket }}</p>
+                <div class="tag-list">
+                    {% for t in item.tags %}
+                    <span class="tag">{{ t }}</span>
+                    {% endfor %}
+                </div>
+                {% if item.reasons %}
+                <ul class="rec-reasons">
+                    {% for r in item.reasons %}
+                    <li>✔ {{ r }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 配套路线 -->
+        <div class="rec-route">
+            {% if item.route.found %}
+            <div class="route-summary">
+                <strong>{{ item.route.origin }}</strong> → <strong>{{ item.route.destination }}</strong>
+                <span class="badge">{{ item.route.message }}</span>
+            </div>
+            {% if item.route.guides %}
+            <ul class="route-guides">
+                {% for g in item.route.guides %}<li>{{ g }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+            {% for seg in item.route.segments %}
+            <div class="segment">
+                <div class="segment-title">
+                    {% if seg.kind == "公交" %}🚌 {% else %}🚇 {% endif %}
+                    乘坐 {{ seg.line_name }}（{{ seg.station_count }} 站）
+                    {% if seg.first_time %}<span class="seg-time">首末班 {{ seg.first_time }}—{{ seg.last_time }}</span>{% endif %}
+                </div>
+                <ol class="station-list">
+                    {% for st in seg.stations %}
+                    <li>{{ st }}</li>
+                    {% endfor %}
+                </ol>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="rec-traffic">🚦 交通建议：{{ item.route.message }}</p>
+            {% endif %}
+
+            {% if item.route.found %}
+            <form class="fav-form" method="post" action="{{ url_for('favorite.add') }}">
+                <input type="hidden" name="origin" value="{{ item.route.origin }}">
+                <input type="hidden" name="destination" value="{{ item.route.destination }}">
+                <input type="hidden" name="summary" value="{{ item.route.message }}">
+                <input type="hidden" name="path" value="{{ item.route.path | join('、') }}">
+                {% if logged_in %}
+                <button type="submit">收藏这条路线</button>
+                {% else %}
+                <a class="btn-link" href="{{ url_for('auth.login') }}">登录后收藏路线</a>
+                {% endif %}
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if mode == 'manual' and available %}
+<!-- 自选路线结果 -->
 {% if result %}
 <div class="route-result">
     {% if result.found %}
@@ -41,11 +186,18 @@
         <span class="badge">{{ result.message }}</span>
     </div>
 
+    {% if result.guides %}
+    <ul class="route-guides">
+        {% for g in result.guides %}<li>{{ g }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+
     {% for seg in result.segments %}
     <div class="segment">
         <div class="segment-title">
             {% if seg.kind == "公交" %}🚌 {% else %}🚇 {% endif %}
-            乘坐 {{ seg.line_name }}（{{ seg.stations|length }} 站）
+            乘坐 {{ seg.line_name }}（{{ seg.station_count }} 站）
+            {% if seg.first_time %}<span class="seg-time">首末班 {{ seg.first_time }}—{{ seg.last_time }}</span>{% endif %}
         </div>
         <ol class="station-list">
             {% for st in seg.stations %}
@@ -72,5 +224,6 @@
     </form>
     {% endif %}
 </div>
+{% endif %}
 {% endif %}
 {% endblock %}

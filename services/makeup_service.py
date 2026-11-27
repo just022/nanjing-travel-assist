@@ -1,6 +1,13 @@
 # services/makeup_service.py
 import urllib.request
 import json
+import time
+
+# 天气结果短时缓存：避免每次打开页面都同步请求外部接口造成卡顿
+_WEATHER_CACHE = {"data": None, "ts": 0}
+_GEO_CACHE = {"loc": None}  # 经纬度基本不变，缓存地理编码结果，省去每次首次的 geo 请求
+CACHE_TTL = 300  # 秒，5 分钟内复用缓存天气
+HTTP_TIMEOUT = 4  # 单次请求超时，超时即走兜底，避免长时间阻塞
 
 # 免费天气接口（Open-Meteo，无需 key），默认南京
 # 地理编码与天气预报分两个域名，个别网络下预报域名握手慢，做了降级处理
@@ -43,20 +50,27 @@ SKIN_TONES = ["白皙", "自然偏白", "自然黄皮", "健康小麦"]
 
 def _get_json(url):
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=10) as resp:
+    with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
 
 def get_nanjing_weather():
-    """获取南京当前天气，返回 dict；接口失败时返回兜底天气并标注。"""
+    """获取南京当前天气，返回 dict；5 分钟内复用缓存，失败时返回兜底天气并标注。"""
+    now = time.time()
+    if _WEATHER_CACHE["data"] and now - _WEATHER_CACHE["ts"] < CACHE_TTL:
+        return dict(_WEATHER_CACHE["data"])
+
     try:
-        geo = _get_json(GEO_URL)
-        loc = geo["results"][0]
+        loc = _GEO_CACHE["loc"]
+        if loc is None:
+            geo = _get_json(GEO_URL)
+            loc = geo["results"][0]
+            _GEO_CACHE["loc"] = loc
         lat, lon = loc["latitude"], loc["longitude"]
         data = _get_json(WEATHER_URL.format(lat=lat, lon=lon))
         cur = data["current"]
         code = cur.get("weather_code", 0)
-        return {
+        weather = {
             "temperature": round(cur["temperature_2m"]),
             "humidity": cur["relative_humidity_2m"],
             "wind_speed": round(cur["wind_speed_10m"]),
@@ -65,8 +79,15 @@ def get_nanjing_weather():
             "city": loc.get("name", "南京"),
             "fallback": False,
         }
+        _WEATHER_CACHE["data"] = weather
+        _WEATHER_CACHE["ts"] = now
+        return dict(weather)
     except Exception:
-        return dict(FALLBACK_WEATHER)
+        weather = dict(FALLBACK_WEATHER)
+        weather["fallback"] = True
+        _WEATHER_CACHE["data"] = weather
+        _WEATHER_CACHE["ts"] = now
+        return weather
 
 
 def _skin_type_tip(skin_type):
