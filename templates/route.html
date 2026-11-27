@@ -1,39 +1,51 @@
 {% extends "base.html" %}
 
-{% block title %}路线规划 - 南京出行辅助工具{% endblock %}
+{% block title %}路线规划 - 出行辅助工具{% endblock %}
 
 {% block content %}
 <h1>路线规划</h1>
 
 <form class="search-form" method="get" action="{{ url_for('route.route_index') }}">
-    <select name="origin">
+    <select name="city">
+        {% for c in cities %}
+        <option value="{{ c.code }}" {% if c.code == city_code %}selected{% endif %}>
+            {{ c.name }}{% if not c.enabled %}（暂未收录）{% endif %}
+        </option>
+        {% endfor %}
+    </select>
+    <select name="origin" {% if not available %}disabled{% endif %}>
         <option value="">选择起点</option>
         {% for s in stations %}
         <option value="{{ s }}" {% if s == origin %}selected{% endif %}>{{ s }}</option>
         {% endfor %}
     </select>
-    <select name="destination">
+    <select name="destination" {% if not available %}disabled{% endif %}>
         <option value="">选择终点</option>
         {% for s in stations %}
         <option value="{{ s }}" {% if s == destination %}selected{% endif %}>{{ s }}</option>
         {% endfor %}
     </select>
-    <button type="submit">规划路线</button>
+    <button type="submit" {% if not available %}disabled{% endif %}>规划路线</button>
 </form>
+
+{% if not available %}
+<div class="route-empty">所选城市的交通数据暂未收录，目前仅支持南京，其他城市即将上线。</div>
+{% endif %}
 
 {% if result %}
 <div class="route-result">
     {% if result.found %}
     <div class="route-summary">
         <strong>{{ result.origin }}</strong> → <strong>{{ result.destination }}</strong>
+        <span class="badge">{{ result.city_name }}</span>
         <span class="badge">{{ result.message }}</span>
     </div>
 
     {% for seg in result.segments %}
     <div class="segment">
         <div class="segment-title">
-            乘坐 {{ seg.line_name }}
-            （{{ seg.stations|length }} 站）
+            {% if seg.kind == "公交" %}🚌 {% else %}🚇 {% endif %}
+            乘坐 {{ seg.line_name }}（{{ seg.stations|length }} 站）
         </div>
         <ol class="station-list">
             {% for st in seg.stations %}
@@ -44,6 +56,20 @@
     {% endfor %}
     {% else %}
     <div class="route-empty">{{ result.message }}</div>
+    {% endif %}
+
+    {% if result.found %}
+    <form class="fav-form" method="post" action="{{ url_for('favorite.add') }}">
+        <input type="hidden" name="origin" value="{{ result.origin }}">
+        <input type="hidden" name="destination" value="{{ result.destination }}">
+        <input type="hidden" name="summary" value="{{ result.message }}">
+        <input type="hidden" name="path" value="{{ result.path | join('、') }}">
+        {% if logged_in %}
+        <button type="submit">收藏这条路线</button>
+        {% else %}
+        <a class="btn-link" href="{{ url_for('auth.login') }}">登录后收藏路线</a>
+        {% endif %}
+    </form>
     {% endif %}
 </div>
 {% endif %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}妆容推荐 - 出行辅助工具{% endblock %}
+
+{% block content %}
+<h1>天气妆容推荐</h1>
+
+{% if weather %}
+<div class="weather-card">
+    <h2>{{ weather.city }} 当前天气</h2>
+    <p class="weather-main">
+        <span class="badge">{{ weather.weather_text }}</span>
+        <span class="badge">{{ weather.temperature }}℃</span>
+        <span class="badge">湿度 {{ weather.humidity }}%</span>
+        <span class="badge">风速 {{ weather.wind_speed }} km/h</span>
+    </p>
+    {% if weather.fallback %}
+    <p class="route-empty">实时天气接口暂不可用，当前为示例天气数据。</p>
+    {% endif %}
+</div>
+{% else %}
+<div class="route-empty">天气信息暂时获取失败，已为你展示通用妆容建议。</div>
+{% endif %}
+
+<form class="makeup-filter" method="get" action="{{ url_for('makeup.makeup_index') }}">
+    <label>肤质
+        <select name="skin_type">
+            {% for st in skin_types %}
+            <option value="{{ st }}" {% if st == skin_type %}selected{% endif %}>{{ st }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>肤色
+        <select name="skin_tone">
+            {% for tn in skin_tones %}
+            <option value="{{ tn }}" {% if tn == skin_tone %}selected{% endif %}>{{ tn }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>场景
+        <select name="scene">
+            <option value="auto" {% if scene == 'auto' %}selected{% endif %}>自动（按天气）</option>
+            <option value="commute" {% if scene == 'commute' %}selected{% endif %}>通勤</option>
+            <option value="trip" {% if scene == 'trip' %}selected{% endif %}>出游</option>
+            <option value="date" {% if scene == 'date' %}selected{% endif %}>约会</option>
+            <option value="rainy" {% if scene == 'rainy' %}selected{% endif %}>雨天</option>
+            <option value="snowy" {% if scene == 'snowy' %}selected{% endif %}>雪景</option>
+        </select>
+    </label>
+    <button type="submit">生成推荐</button>
+</form>
+
+<div class="makeup-card">
+    <h2>推荐风格：{{ advice.style }} <span class="badge">{{ advice.scene }}</span></h2>
+
+    {% if advice.images %}
+    <div class="makeup-gallery">
+        <img id="makeupMainImg" class="makeup-img"
+             src="{{ url_for('static', filename='images/' ~ advice.images[0]) }}"
+             alt="{{ advice.style }}">
+        {% if advice.images|length > 1 %}
+        <div class="thumb-list">
+            {% for img in advice.images %}
+            <img class="thumb{% if loop.first %} active{% endif %}"
+                 src="{{ url_for('static', filename='images/' ~ img) }}"
+                 alt="{{ advice.style }}参考{{ loop.index }}"
+                 onclick="switchMakeupImg('{{ url_for('static', filename='images/' ~ img) }}', this)">
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <table class="data-table">
+        <tbody>
+            <tr><th>底妆</th><td>{{ advice.base }}</td></tr>
+            <tr><th>眼妆</th><td>{{ advice.eye }}</td></tr>
+            <tr><th>唇妆</th><td>{{ advice.lip }}</td></tr>
+        </tbody>
+    </table>
+    <p class="makeup-tips">💡 {{ advice.tips }}</p>
+</div>
+
+<script>
+function switchMakeupImg(src, el) {
+    document.getElementById('makeupMainImg').src = src;
+    document.querySelectorAll('.thumb').forEach(function (t) { t.classList.remove('active'); });
+    el.classList.add('active');
+}
+</script>
+{% endblock %}

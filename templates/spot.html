@@ -1,18 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}南京景点 - 南京出行辅助工具{% endblock %}
+{% block title %}热门景点 - 出行辅助工具{% endblock %}
 
 {% block content %}
-<h1>南京热门景点</h1>
+<h1>热门景点</h1>
 
 <div class="spot-list">
     {% for spot in spots %}
     <div class="card">
-        {% if spot.image %}
-        <img class="spot-img" src="{{ url_for('static', filename='images/' ~ spot.image) }}" alt="{{ spot.spot_name }}">
-        {% endif %}
+        <a href="{{ url_for('spot.spot_detail', spot_id=spot.id) }}">
+            {% if spot.image %}
+            <img class="spot-img" src="{{ url_for('static', filename='images/' ~ spot.image) }}" alt="{{ spot.spot_name }}">
+            {% endif %}
+        </a>
         <div class="card-body">
-            <h3>{{ spot.spot_name }}</h3>
+            <h3><a href="{{ url_for('spot.spot_detail', spot_id=spot.id) }}">{{ spot.spot_name }}</a></h3>
             <p class="addr">📍 {{ spot.address }}</p>
             <p class="traffic">🚇 {{ spot.recommend_traffic }}</p>
         </div>

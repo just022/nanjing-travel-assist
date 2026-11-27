@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}公交查询 - 南京出行辅助工具{% endblock %}
+{% block title %}公交查询 - 出行辅助工具{% endblock %}
 
 {% block content %}
 <h1>公交查询</h1>
@@ -12,7 +12,7 @@
 
 <table class="data-table">
     <thead>
-        <tr><th>线路</th><th>起点站</th><th>终点站</th></tr>
+        <tr><th>线路</th><th>起点站</th><th>终点站</th><th>运营时间</th><th>详情</th></tr>
     </thead>
     <tbody>
     {% for line in lines %}
@@ -20,9 +20,11 @@
             <td>{{ line.line_name }}</td>
             <td>{{ line.start_station }}</td>
             <td>{{ line.end_station }}</td>
+            <td>{{ line.first_time or '-' }} — {{ line.last_time or '-' }}</td>
+            <td><a href="{{ url_for('bus.bus_detail', line_id=line.id) }}">查看站点</a></td>
         </tr>
     {% else %}
-        <tr><td colspan="3">暂无匹配线路</td></tr>
+        <tr><td colspan="5">暂无匹配线路</td></tr>
     {% endfor %}
     </tbody>
 </table>

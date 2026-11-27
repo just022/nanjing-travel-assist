@@ -1,20 +1,48 @@
 {% extends "base.html" %}
 
-{% block title %}首页 - 南京出行辅助工具{% endblock %}
+{% block title %}首页 - 出行辅助工具{% endblock %}
 
 {% block content %}
-<h1>南京出行辅助工具</h1>
-<p>查询地铁、公交，规划出行路线，了解南京热门景点。</p>
+<div class="hero">
+    <h1>城市出行辅助工具</h1>
+    <p>查询地铁公交、规划出行路线、浏览热门景点，并根据天气推荐妆容。</p>
+</div>
+
+<div class="entry-grid">
+    <a class="entry-card entry-blue" href="{{ url_for('transit.transit_index') }}">
+        <div class="entry-icon">🚇</div>
+        <h3>出行查询</h3>
+        <p>地铁线路、公交班次与途经站点一站式查询</p>
+    </a>
+    <a class="entry-card entry-pink" href="{{ url_for('route.route_index') }}">
+        <div class="entry-icon">🗺️</div>
+        <h3>路线规划</h3>
+        <p>输入起终点，智能推荐换乘路线与线路图</p>
+    </a>
+    <a class="entry-card entry-blue" href="{{ url_for('spot.spot_index') }}">
+        <div class="entry-icon">🏞️</div>
+        <h3>热门景点</h3>
+        <p>图文介绍、开放时间、门票与游玩攻略</p>
+    </a>
+    <a class="entry-card entry-pink" href="{{ url_for('makeup.makeup_index') }}">
+        <div class="entry-icon">💄</div>
+        <h3>妆容推荐</h3>
+        <p>结合实时天气、肤质与场景推荐合适妆容</p>
+    </a>
+</div>
 
 {% if spots %}
+<h2 class="section-title">热门景点推荐</h2>
 <div class="spot-list">
     {% for spot in spots %}
     <div class="card">
-        {% if spot.image %}
-        <img class="spot-img" src="{{ url_for('static', filename='images/' ~ spot.image) }}" alt="{{ spot.spot_name }}">
-        {% endif %}
+        <a href="{{ url_for('spot.spot_detail', spot_id=spot.id) }}">
+            {% if spot.image %}
+            <img class="spot-img" src="{{ url_for('static', filename='images/' ~ spot.image) }}" alt="{{ spot.spot_name }}">
+            {% endif %}
+        </a>
         <div class="card-body">
-            <h3>{{ spot.spot_name }}</h3>
+            <h3><a href="{{ url_for('spot.spot_detail', spot_id=spot.id) }}">{{ spot.spot_name }}</a></h3>
             <p class="traffic">🚇 {{ spot.recommend_traffic }}</p>
         </div>
     </div>

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}出行查询 - 出行辅助工具{% endblock %}
+
+{% block content %}
+<h1>出行查询</h1>
+
+<!-- 地铁 / 公交 切换标签 -->
+<div class="tab-bar">
+    <a class="tab {% if tab == 'subway' %}active{% endif %}"
+       href="{{ url_for('transit.transit_index', tab='subway') }}">地铁</a>
+    <a class="tab {% if tab == 'bus' %}active{% endif %}"
+       href="{{ url_for('transit.transit_index', tab='bus') }}">公交</a>
+</div>
+
+{% if tab == 'bus' %}
+<form class="search-form" method="get" action="{{ url_for('transit.transit_index', tab='bus') }}">
+    <input type="text" name="keyword" value="{{ keyword }}" placeholder="输入公交线路，如：1路">
+    <button type="submit">搜索</button>
+</form>
+
+<table class="data-table">
+    <thead>
+        <tr><th>线路</th><th>起点站</th><th>终点站</th><th>运营时间</th><th>详情</th></tr>
+    </thead>
+    <tbody>
+    {% for line in bus_lines %}
+        <tr>
+            <td>{{ line.line_name }}</td>
+            <td>{{ line.start_station }}</td>
+            <td>{{ line.end_station }}</td>
+            <td>{{ line.first_time or '-' }} — {{ line.last_time or '-' }}</td>
+            <td><a href="{{ url_for('transit.bus_detail', line_id=line.id) }}">查看站点</a></td>
+        </tr>
+    {% else %}
+        <tr><td colspan="5">暂无匹配线路</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<form class="search-form" method="get" action="{{ url_for('transit.transit_index', tab='subway') }}">
+    <input type="text" name="keyword" value="{{ keyword }}" placeholder="输入站点名，如：新街口">
+    <button type="submit">搜索</button>
+</form>
+
+{% if keyword %}
+<h2>搜索结果：{% if subway_stations %}找到 {{ subway_stations|length }} 个站点{% else %}未找到相关站点{% endif %}</h2>
+{% if subway_stations %}
+<table class="data-table">
+    <thead>
+        <tr><th>站点名</th><th>是否换乘站</th></tr>
+    </thead>
+    <tbody>
+    {% for s in subway_stations %}
+        <tr>
+            <td>{{ s.station_name }}</td>
+            <td>{{ '是' if s.is_transfer else '否' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% else %}
+
+<h2>线路示意图</h2>
+<div class="line-map">
+    {% for line in line_map %}
+    <div class="map-line">
+        <div class="map-line-head">
+            <span class="line-dot" style="background:{{ line.line_color }}"></span>
+            {{ line.line_name }}
+            <span class="line-count">（{{ line.stations|length }} 站）</span>
+        </div>
+        <div class="map-stations">
+            {% for st in line.stations %}
+            <span class="map-station {% if st.transfer %}transfer{% endif %}">{{ st.name }}</span>
+            {% if not loop.last %}<span class="map-link" style="background:{{ line.line_color }}"></span>{% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

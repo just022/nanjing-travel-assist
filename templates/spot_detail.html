@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}{{ spot.spot_name }} - 景点详情{% endblock %}
+
+{% block content %}
+<h1>{{ spot.spot_name }}</h1>
+
+<div class="spot-detail">
+    {% set gallery = spot.images.split(',') if spot.images else ([spot.image] if spot.image else []) %}
+    {% if gallery %}
+    <div class="spot-gallery">
+        <img id="spotMainImg" class="spot-detail-img"
+             src="{{ url_for('static', filename='images/' ~ gallery[0]) }}" alt="{{ spot.spot_name }}">
+        {% if gallery|length > 1 %}
+        <div class="thumb-list">
+            {% for img in gallery %}
+            <img class="thumb{% if loop.first %} active{% endif %}"
+                 src="{{ url_for('static', filename='images/' ~ img) }}"
+                 alt="{{ spot.spot_name }}配图{{ loop.index }}"
+                 onclick="switchSpotImg('{{ url_for('static', filename='images/' ~ img) }}', this)">
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if spot.tags %}
+    <div class="tag-list">
+        {% for tag in spot.tags.split('、') %}
+        <span class="tag">{{ tag }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <table class="data-table detail-meta-table">
+        <tbody>
+            <tr><th>📍 地址</th><td>{{ spot.address }}</td></tr>
+            <tr><th>🚇 交通</th><td>{{ spot.recommend_traffic }}</td></tr>
+            {% if spot.open_time %}<tr><th>⏰ 开放时间</th><td>{{ spot.open_time }}</td></tr>{% endif %}
+            {% if spot.ticket %}<tr><th>🎫 门票</th><td>{{ spot.ticket }}</td></tr>{% endif %}
+            {% if spot.duration %}<tr><th>⏳ 建议游玩</th><td>{{ spot.duration }}</td></tr>{% endif %}
+        </tbody>
+    </table>
+
+    <div class="detail-desc">
+        <h2>图文介绍</h2>
+        <p>{{ spot.description }}</p>
+    </div>
+</div>
+
+<p><a href="{{ url_for('spot.spot_index') }}">← 返回景点列表</a></p>
+
+<script>
+function switchSpotImg(src, el) {
+    document.getElementById('spotMainImg').src = src;
+    var thumbs = document.querySelectorAll('.thumb');
+    thumbs.forEach(function (t) { t.classList.remove('active'); });
+    el.classList.add('active');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}{{ line.line_name }} - 出行查询{% endblock %}
+
+{% block content %}
+<h1>{{ line.line_name }}</h1>
+<p>起点：{{ line.start_station }}　终点：{{ line.end_station }}</p>
+{% if line.first_time %}<p>运营时间：{{ line.first_time }} — {{ line.last_time }}</p>{% endif %}
+
+<h2>途经站点（{{ stations|length }} 站）</h2>
+<ol class="station-list">
+    {% for st in stations %}
+    <li>{{ st }}</li>
+    {% endfor %}
+</ol>
+
+<p><a href="{{ url_for('transit.transit_index', tab='bus') }}">← 返回公交列表</a></p>
+{% endblock %}
