@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 南京出行辅助工具{% endblock %}
+
+{% block content %}
+<h1>南京出行辅助工具</h1>
+<p>查询地铁、公交，规划出行路线，了解南京热门景点。</p>
+
+{% if spots %}
+<div class="spot-list">
+    <h2>热门景点推荐</h2>
+    {% for spot in spots %}
+    <div class="card">
+        <h3>{{ spot.spot_name }}</h3>
+        <p class="addr">{{ spot.address }}</p>
+        <p class="traffic">🚇 {{ spot.recommend_traffic }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}南京景点 - 南京出行辅助工具{% endblock %}
+
+{% block content %}
+<h1>南京景点</h1>
+
+<div class="spot-list">
+    {% for spot in spots %}
+    <div class="card">
+        <h3>{{ spot.spot_name }}</h3>
+        <p class="addr">📍 {{ spot.address }}</p>
+        <p class="traffic">🚇 {{ spot.recommend_traffic }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

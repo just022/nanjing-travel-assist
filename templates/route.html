@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}路线规划 - 南京出行辅助工具{% endblock %}
+
+{% block content %}
+<h1>路线规划</h1>
+<p>输入起点与终点，规划出行方案（功能待开发）。</p>
+
+<form class="search-form" method="get" action="#">
+    <input type="text" name="origin" placeholder="起点">
+    <input type="text" name="destination" placeholder="终点">
+    <button type="submit">规划路线</button>
+</form>
+{% endblock %}

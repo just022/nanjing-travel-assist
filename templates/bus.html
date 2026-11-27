@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}公交查询 - 南京出行辅助工具{% endblock %}
+
+{% block content %}
+<h1>公交查询</h1>
+
+<form class="search-form" method="get" action="{{ url_for('bus.bus_index') }}">
+    <input type="text" name="keyword" value="{{ keyword }}" placeholder="输入公交线路，如：1路">
+    <button type="submit">搜索</button>
+</form>
+
+<table class="data-table">
+    <thead>
+        <tr><th>线路</th><th>起点站</th><th>终点站</th></tr>
+    </thead>
+    <tbody>
+    {% for line in lines %}
+        <tr>
+            <td>{{ line.line_name }}</td>
+            <td>{{ line.start_station }}</td>
+            <td>{{ line.end_station }}</td>
+        </tr>
+    {% else %}
+        <tr><td colspan="3">暂无匹配线路</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

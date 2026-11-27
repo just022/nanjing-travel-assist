@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}地铁查询 - 南京出行辅助工具{% endblock %}
+
+{% block content %}
+<h1>地铁查询</h1>
+
+<form class="search-form" method="get" action="{{ url_for('subway.subway_index') }}">
+    <input type="text" name="keyword" value="{{ keyword }}" placeholder="输入站点名，如：新街口">
+    <button type="submit">搜索</button>
+</form>
+
+{% if keyword %}
+<h2>搜索结果：{% if stations %}找到 {{ stations|length }} 个站点{% else %}未找到相关站点{% endif %}</h2>
+{% if stations %}
+<table class="data-table">
+    <thead>
+        <tr><th>站点名</th><th>是否换乘站</th></tr>
+    </thead>
+    <tbody>
+    {% for s in stations %}
+        <tr>
+            <td>{{ s.station_name }}</td>
+            <td>{{ '是' if s.is_transfer else '否' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% else %}
+<h2>地铁线路</h2>
+<div class="line-list">
+    {% for line in lines %}
+    <div class="line-item">
+        <span class="line-dot" style="background:{{ line.line_color }}"></span>
+        {{ line.line_name }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
